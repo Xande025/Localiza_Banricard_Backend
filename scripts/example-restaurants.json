@@ -1,0 +1,31 @@
+[
+  {
+    "name": "Restaurante Exemplo 1",
+    "address": "Rua dos Andradas, 1234",
+    "city": "Porto Alegre",
+    "neighborhood": "Centro Histórico",
+    "region": "Metropolitana",
+    "state": "RS",
+    "phone": "(51) 3221-1234",
+    "email": "contato@exemplo1.com.br",
+    "website": "https://www.exemplo1.com.br"
+  },
+  {
+    "name": "Lanchonete Exemplo 2",
+    "address": "Av. Assis Brasil, 5678",
+    "city": "Porto Alegre",
+    "neighborhood": "Cristal",
+    "region": "Metropolitana",
+    "state": "RS",
+    "phone": "(51) 3333-5678"
+  },
+  {
+    "name": "Padaria Exemplo 3",
+    "address": "Rua João Pessoa, 901",
+    "city": "Caxias do Sul",
+    "neighborhood": "Centro",
+    "region": "Serra",
+    "state": "RS",
+    "phone": "(54) 3221-9012"
+  }
+]

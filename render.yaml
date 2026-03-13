@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: localiza-banricard-backend
+    env: node
+    plan: free
+    buildCommand: npm install && npm run prisma:generate
+    startCommand: npm run prisma:migrate:deploy && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false

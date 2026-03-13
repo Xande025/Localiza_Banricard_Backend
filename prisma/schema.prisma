@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Restaurant {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  address     String   @db.Text
+  city        String   @db.VarChar(100)
+  neighborhood String? @db.VarChar(100)
+  region      String? @db.VarChar(100)
+  state       String   @default("RS") @db.VarChar(2)
+  phone       String? @db.VarChar(20)
+  email       String? @db.VarChar(255)
+  website     String? @db.VarChar(255)
+  latitude    Decimal? @db.Decimal(10, 8)
+  longitude   Decimal? @db.Decimal(11, 8)
+  verified    Boolean  @default(false)
+  createdBy   String?  @map("created_by") @db.VarChar(100)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relacionamento com histórico (futuro)
+  updateHistory UpdateHistory[]
+
+  // Índices para performance em buscas
+  @@index([city], name: "idx_city")
+  @@index([neighborhood], name: "idx_neighborhood")
+  @@index([region], name: "idx_region")
+  @@index([latitude, longitude], name: "idx_location")
+  @@map("restaurants")
+}
+
+model UpdateHistory {
+  id           Int      @id @default(autoincrement())
+  restaurantId Int      @map("restaurant_id")
+  action       String   @db.VarChar(50)
+  updatedBy    String?  @map("updated_by") @db.VarChar(100)
+  updatedAt    DateTime @default(now()) @map("updated_at")
+  
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId], name: "idx_restaurant_id")
+  @@map("update_history")
+}

@@ -1,0 +1,46 @@
+{
+  "name": "localiza-banricard-backend",
+  "version": "1.0.0",
+  "description": "Backend API para Localiza Banricard - Estabelecimentos que aceitam Banricard Vale Refeição",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "node prisma/seed.js",
+    "db:reset": "prisma migrate reset",
+    "import:pdf": "node scripts/import-pdf.js",
+    "extract:pdf": "node scripts/extract-pdf-improved.js",
+    "analyze:pdf": "node scripts/analyze-pdf.js",
+    "geocode:existing": "node scripts/geocode-existing.js",
+    "geocode:existing:all": "node scripts/geocode-existing.js --all",
+    "geocode:existing:limit": "node scripts/geocode-existing.js --limit=100",
+    "geocode:existing:fast": "node scripts/geocode-existing.js --delay=50"
+  },
+  "keywords": [
+    "banricard",
+    "vale-refeicao",
+    "estabelecimentos",
+    "api",
+    "postgresql"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^5.7.1",
+    "axios": "^1.6.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.1",
+    "pdf-parse": "^1.1.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "prisma": "^5.7.1"
+  }
+}
