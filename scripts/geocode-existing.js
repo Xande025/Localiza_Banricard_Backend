@@ -67,15 +67,15 @@ async function geocodeExistingRestaurants(limit = 0, delay = 100, regeocodeAll =
     if (regeocodeAll) {
       console.log('🔄 Re-geocodificando TODOS os restaurantes para melhorar precisão...\n');
     } else {
-      console.log('🔍 Buscando restaurantes sem coordenadas...\n');
+    console.log('🔍 Buscando restaurantes sem coordenadas...\n');
     }
     
     // Construir cláusula where
     let whereClause = regeocodeAll ? {} : {
-      OR: [
-        { latitude: null },
-        { longitude: null },
-      ],
+        OR: [
+          { latitude: null },
+          { longitude: null },
+        ],
     };
     
     // Adicionar filtro de cidade se fornecido
@@ -93,7 +93,7 @@ async function geocodeExistingRestaurants(limit = 0, delay = 100, regeocodeAll =
       if (regeocodeAll) {
         console.log('⚠️  Nenhum restaurante encontrado no banco de dados!');
       } else {
-        console.log('✅ Todos os restaurantes já têm coordenadas!');
+      console.log('✅ Todos os restaurantes já têm coordenadas!');
       }
       return;
     }
@@ -108,7 +108,7 @@ async function geocodeExistingRestaurants(limit = 0, delay = 100, regeocodeAll =
       if (city) {
         console.log(`📊 Encontrados ${restaurants.length} restaurantes sem coordenadas em ${city}\n`);
       } else {
-        console.log(`📊 Encontrados ${restaurants.length} restaurantes para geocodificar\n`);
+    console.log(`📊 Encontrados ${restaurants.length} restaurantes para geocodificar\n`);
       }
     }
     
@@ -223,20 +223,20 @@ async function geocodeExistingRestaurants(limit = 0, delay = 100, regeocodeAll =
     
     // Estatísticas finais (apenas se não estiver re-geocodificando todos)
     if (!regeocodeAll) {
-      const remaining = await prisma.restaurant.count({
-        where: {
-          OR: [
-            { latitude: null },
-            { longitude: null },
-          ],
-        },
-      });
-      
-      if (remaining > 0) {
-        console.log(`\n⚠️  Ainda restam ${remaining} restaurantes sem coordenadas.`);
-        console.log('💡 Execute novamente para continuar: npm run geocode:existing');
-      } else {
-        console.log('\n🎉 Todos os restaurantes foram geocodificados!');
+    const remaining = await prisma.restaurant.count({
+      where: {
+        OR: [
+          { latitude: null },
+          { longitude: null },
+        ],
+      },
+    });
+    
+    if (remaining > 0) {
+      console.log(`\n⚠️  Ainda restam ${remaining} restaurantes sem coordenadas.`);
+      console.log('💡 Execute novamente para continuar: npm run geocode:existing');
+    } else {
+      console.log('\n🎉 Todos os restaurantes foram geocodificados!');
       }
     }
     
