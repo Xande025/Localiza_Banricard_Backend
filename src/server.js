@@ -14,6 +14,7 @@ const allowedOrigins = [
   'http://localhost:3001',
   'http://localhost:3000',
   'https://localiza-banricard.vercel.app', // URL do Vercel
+  'https://localiza-banricard.vercel.app/', // URL do Vercel com barra
   process.env.FRONTEND_URL,
 ].filter(Boolean); // Remove valores undefined/null
 
@@ -22,10 +23,17 @@ const corsOptions = {
     // Permite requisições sem origin (ex: Postman, mobile apps)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.includes(origin)) {
+    // Remove barra no final para comparação
+    const normalizedOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
+    const normalizedAllowed = allowedOrigins.map(o => o.endsWith('/') ? o.slice(0, -1) : o);
+    
+    if (normalizedAllowed.includes(normalizedOrigin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      console.log('CORS bloqueado para origem:', origin);
+      console.log('Origens permitidas:', allowedOrigins);
+      // Retorna false ao invés de lançar erro para evitar erro não tratado
+      callback(null, false);
     }
   },
   credentials: true
