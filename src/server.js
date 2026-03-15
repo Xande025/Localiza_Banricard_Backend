@@ -6,6 +6,12 @@ import restaurantsRoutes from './routes/restaurants.js';
 // Carregar variáveis de ambiente
 dotenv.config();
 
+// DEBUG: Verificar qual URL está sendo usada (remover depois)
+console.log('🔍 DATABASE_URL:', process.env.DATABASE_URL ? 
+  process.env.DATABASE_URL.replace(/:[^:@]+@/, ':****@').substring(0, 100) + '...' : 'NÃO DEFINIDO');
+console.log('🔍 Host detectado:', process.env.DATABASE_URL?.match(/@([^:]+)/)?.[1]);
+console.log('🔍 Porta detectada:', process.env.DATABASE_URL?.match(/:(\d+)\//)?.[1]);
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
