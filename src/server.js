@@ -6,18 +6,27 @@ import restaurantsRoutes from './routes/restaurants.js';
 // Carregar variáveis de ambiente
 dotenv.config();
 
-// DEBUG: Verificar qual URL está sendo usada (remover depois)
-console.log('🔍 DATABASE_URL:', process.env.DATABASE_URL ? 
-  process.env.DATABASE_URL.replace(/:[^:@]+@/, ':****@').substring(0, 100) + '...' : 'NÃO DEFINIDO');
-console.log('🔍 Host detectado:', process.env.DATABASE_URL?.match(/@([^:]+)/)?.[1]);
-console.log('🔍 Porta detectada:', process.env.DATABASE_URL?.match(/:(\d+)\//)?.[1]);
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// Middleware CORS - permite múltiplas origens (localhost e Vercel)
+const allowedOrigins = [
+  'http://localhost:3001',
+  'http://localhost:3000',
+  process.env.FRONTEND_URL,
+].filter(Boolean); // Remove valores undefined/null
+
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:3001',
+  origin: (origin, callback) => {
+    // Permite requisições sem origin (ex: Postman, mobile apps)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 };
 app.use(cors(corsOptions));
