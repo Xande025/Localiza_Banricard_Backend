@@ -13,6 +13,7 @@ const PORT = process.env.PORT || 3000;
 const allowedOrigins = [
   'http://localhost:3001',
   'http://localhost:3000',
+  'https://localiza-banricard.vercel.app', // URL do Vercel
   process.env.FRONTEND_URL,
 ].filter(Boolean); // Remove valores undefined/null
 
