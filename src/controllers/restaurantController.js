@@ -243,9 +243,9 @@ export const deleteRestaurant = async (req, res) => {
  */
 export const getCities = async (req, res) => {
   try {
-    const cities = await prisma.restaurant.findMany({
-      select: { city: true },
-      distinct: ['city'],
+    // Usa groupBy ao invés de distinct para melhor compatibilidade
+    const cities = await prisma.restaurant.groupBy({
+      by: ['city'],
       orderBy: { city: 'asc' }
     });
 
@@ -277,10 +277,10 @@ export const getNeighborhoods = async (req, res) => {
       where.city = city;
     }
 
-    const neighborhoods = await prisma.restaurant.findMany({
+    // Usa groupBy ao invés de distinct
+    const neighborhoods = await prisma.restaurant.groupBy({
       where,
-      select: { neighborhood: true },
-      distinct: ['neighborhood'],
+      by: ['neighborhood'],
       orderBy: { neighborhood: 'asc' }
     });
 
@@ -303,10 +303,10 @@ export const getNeighborhoods = async (req, res) => {
  */
 export const getRegions = async (req, res) => {
   try {
-    const regions = await prisma.restaurant.findMany({
+    // Usa groupBy ao invés de distinct
+    const regions = await prisma.restaurant.groupBy({
       where: { region: { not: null } },
-      select: { region: true },
-      distinct: ['region'],
+      by: ['region'],
       orderBy: { region: 'asc' }
     });
 
