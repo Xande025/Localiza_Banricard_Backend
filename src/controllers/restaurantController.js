@@ -1,44 +1,141 @@
+import { Prisma } from '@prisma/client';
 import prisma from '../lib/prisma.js';
 import { geocodeAddress } from '../services/geocoder.js';
 
+/** Haversine distance in km (PostgreSQL) — lat/lng in degrees */
+function sqlDistanceKm(lat, lng) {
+  return Prisma.sql`(6371 * 2 * asin(sqrt(
+    least(1.0, greatest(0.0,
+      pow(sin((radians(latitude::float8) - radians(${lat})) / 2), 2) +
+      cos(radians(${lat})) * cos(radians(latitude::float8)) *
+      pow(sin((radians(longitude::float8) - radians(${lng})) / 2), 2)
+    ))
+  )))`;
+}
+
+function mapRawRestaurantRow(row) {
+  const toStr = (v) => (v == null ? null : String(v));
+  return {
+    id: row.id,
+    name: row.name,
+    address: row.address,
+    city: row.city,
+    neighborhood: row.neighborhood,
+    region: row.region,
+    state: row.state,
+    phone: row.phone,
+    email: row.email,
+    website: row.website,
+    latitude: toStr(row.latitude),
+    longitude: toStr(row.longitude),
+    verified: row.verified,
+    createdBy: row.created_by,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    distanceKm: row.distance_km != null ? Number(row.distance_km) : undefined,
+  };
+}
+
 /**
- * Lista todos os restaurantes com filtros opcionais
+ * Lista todos os restaurantes com filtros opcionais.
+ * Com lat, lng e radiusKm válidos, filtra por distância (km) no servidor (haversine).
  */
 export const getAllRestaurants = async (req, res) => {
   try {
-    const { city, neighborhood, region, search, verified, limit, offset } = req.query;
+    const { city, neighborhood, region, search, verified, limit, offset, lat, lng, radiusKm } = req.query;
+
+    const latNum = parseFloat(lat);
+    const lngNum = parseFloat(lng);
+    const radiusNum = parseFloat(radiusKm);
+    const geoActive =
+      Number.isFinite(latNum) &&
+      Number.isFinite(lngNum) &&
+      Number.isFinite(radiusNum) &&
+      radiusNum > 0 &&
+      latNum >= -90 &&
+      latNum <= 90 &&
+      lngNum >= -180 &&
+      lngNum <= 180;
+
+    if (geoActive) {
+      const conditions = [
+        Prisma.sql`latitude IS NOT NULL AND longitude IS NOT NULL`,
+        Prisma.sql`${sqlDistanceKm(latNum, lngNum)} <= ${radiusNum}`,
+      ];
+
+      if (city) {
+        conditions.push(Prisma.sql`city ILIKE ${'%' + city + '%'}`);
+      }
+      if (neighborhood) {
+        conditions.push(Prisma.sql`COALESCE(neighborhood, '') ILIKE ${'%' + neighborhood + '%'}`);
+      }
+      if (region) {
+        conditions.push(Prisma.sql`COALESCE(region, '') ILIKE ${'%' + region + '%'}`);
+      }
+      if (search) {
+        const pattern = '%' + search + '%';
+        conditions.push(Prisma.sql`(name ILIKE ${pattern} OR address ILIKE ${pattern})`);
+      }
+      if (verified !== undefined) {
+        conditions.push(Prisma.sql`verified = ${verified === 'true'}`);
+      }
+
+      const whereSql = Prisma.join(conditions, ' AND ');
+      const take = limit ? parseInt(limit, 10) : undefined;
+      const skip = offset ? parseInt(offset, 10) : 0;
+
+      const limitClause =
+        Number.isFinite(take) && take > 0 ? Prisma.sql`LIMIT ${take}` : Prisma.empty;
+      const offsetClause =
+        Number.isFinite(skip) && skip > 0 ? Prisma.sql`OFFSET ${skip}` : Prisma.empty;
+
+      const dist = sqlDistanceKm(latNum, lngNum);
+      const rows = await prisma.$queryRaw`
+        SELECT
+          id, name, address, city, neighborhood, region, state, phone, email, website,
+          latitude, longitude, verified, created_by, created_at, updated_at,
+          ${dist} AS distance_km
+        FROM restaurants
+        WHERE ${whereSql}
+        ORDER BY distance_km ASC
+        ${limitClause}
+        ${offsetClause}
+      `;
+
+      const restaurants = rows.map(mapRawRestaurantRow);
+
+      return res.json({
+        success: true,
+        count: restaurants.length,
+        data: restaurants,
+      });
+    }
 
     const where = {};
 
-    // Filtro por cidade
     if (city) {
       where.city = { contains: city, mode: 'insensitive' };
     }
 
-    // Filtro por bairro
     if (neighborhood) {
       where.neighborhood = { contains: neighborhood, mode: 'insensitive' };
     }
 
-    // Filtro por região
     if (region) {
       where.region = { contains: region, mode: 'insensitive' };
     }
 
-    // Busca por texto (nome ou endereço)
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
-        { address: { contains: search, mode: 'insensitive' } }
+        { address: { contains: search, mode: 'insensitive' } },
       ];
     }
 
-    // Filtro por verificação
     if (verified !== undefined) {
       where.verified = verified === 'true';
     }
 
-    // Executar query
     const restaurants = await prisma.restaurant.findMany({
       where,
       orderBy: { name: 'asc' },
@@ -49,14 +146,14 @@ export const getAllRestaurants = async (req, res) => {
     res.json({
       success: true,
       count: restaurants.length,
-      data: restaurants
+      data: restaurants,
     });
   } catch (error) {
     console.error('Erro ao buscar restaurantes:', error);
     res.status(500).json({
       success: false,
       message: 'Erro ao buscar restaurantes',
-      error: error.message
+      error: error.message,
     });
   }
 };
